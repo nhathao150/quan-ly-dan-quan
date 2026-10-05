@@ -2,7 +2,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Search, Plus, Edit, Trash2, Eye, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SERVER_URL, API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../config';
 
 const REQUIRED_DOCS = [
   { id: 'donXin', label: 'Đơn xin' },
@@ -176,7 +176,7 @@ export default function MilitiaList() {
                           <div className="w-full max-w-[150px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className={`h-full ${isComplete ? 'bg-green-500' : 'bg-orange-400'}`} 
-                              style={{ width: `${(docStatus.count / docStatus.total) * 100}%` }}
+                              style={{ width: `${(docStatus.count / (docStatus.total || 1)) * 100}%` }}
                             ></div>
                           </div>
 

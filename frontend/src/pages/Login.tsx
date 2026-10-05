@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
-import { SERVER_URL, API_BASE_URL } from '../config';
+
 
 export default function Login() {
   const navigate = useNavigate();

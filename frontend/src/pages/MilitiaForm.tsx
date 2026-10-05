@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Upload, CheckCircle, X, FileText, Eye } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-import { SERVER_URL, API_BASE_URL } from '../config';
+
 
 const DOCUMENT_TYPES = [
   { id: 'donXin', label: 'Đơn xin tham gia DQTV' },

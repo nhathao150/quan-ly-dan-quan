@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/clerk-react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Shield, FileText, Download, Briefcase, Award, X, FolderOpen, Eye, FileArchive } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Shield, FileText, Download, Award, X, FolderOpen, Eye, FileArchive } from 'lucide-react';
 import { SERVER_URL, API_BASE_URL } from '../config';
 
 const DOCUMENT_LABELS: Record<string, string> = {
@@ -62,7 +62,7 @@ export default function MilitiaDetail() {
     }
   };
 
-  const handleDownloadZip = () => {
+  const handleDownloadZip = async () => {
     const token = await getToken();
     fetch(`${API_BASE_URL}/militia/${id}/download-zip`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -81,7 +81,7 @@ export default function MilitiaDetail() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     })
-    .catch(error => alert('Có lỗi xảy ra khi tải file ZIP!'));
+    .catch(() => alert('Có lỗi xảy ra khi tải file ZIP!'));
   };
 
   if (loading) return <div className="p-8 text-center">Đang tải dữ liệu...</div>;
