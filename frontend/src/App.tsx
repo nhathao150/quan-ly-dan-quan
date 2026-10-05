@@ -15,7 +15,7 @@ function App() {
       <div style={{ padding: 40, color: 'red', textAlign: 'center', fontFamily: 'sans-serif' }}>
         <h2>LỖI NGHIÊM TRỌNG</h2>
         <p>Ứng dụng chưa nhận được khóa <b>VITE_CLERK_PUBLISHABLE_KEY</b> từ Vercel.</p>
-        <p>Vui lòng vào Vercel > Settings > Environment Variables để thêm biến này, sau đó Redeploy lại.</p>
+        <p>Vui lòng vào Vercel &gt; Settings &gt; Environment Variables để thêm biến này, sau đó Redeploy lại.</p>
       </div>
     );
   }
