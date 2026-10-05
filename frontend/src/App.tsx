@@ -9,11 +9,17 @@ import MilitiaDetail from './pages/MilitiaDetail';
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key")
-}
-
 function App() {
+  if (!CLERK_PUBLISHABLE_KEY) {
+    return (
+      <div style={{ padding: 40, color: 'red', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h2>LỖI NGHIÊM TRỌNG</h2>
+        <p>Ứng dụng chưa nhận được khóa <b>VITE_CLERK_PUBLISHABLE_KEY</b> từ Vercel.</p>
+        <p>Vui lòng vào Vercel > Settings > Environment Variables để thêm biến này, sau đó Redeploy lại.</p>
+      </div>
+    );
+  }
+
   return (
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
       <BrowserRouter>
