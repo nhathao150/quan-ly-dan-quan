@@ -6,7 +6,7 @@ export const fetchWithAuth = async (url: string, getToken: () => Promise<string 
     ...options,
     headers: {
       ...options.headers,
-      'Authorization': \`Bearer \${token}\`
+      'Authorization': `Bearer ${token}`
     }
   });
 }
