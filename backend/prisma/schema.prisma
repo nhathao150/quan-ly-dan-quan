@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  username     String     @unique
+  passwordHash String
+  role         Role       @default(STAFF)
+  isActive     Boolean    @default(true)
+  auditLogs    AuditLog[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+}
+
+model MilitiaRecord {
+  id               Int               @id @default(autoincrement())
+  fullName         String
+  gender           String            @default("Nam")
+  nationalId       String            @unique
+  dateOfBirth      DateTime
+  address          String
+  classification   Classification
+  joinedDate       DateTime
+  status           MilitiaStatus     @default(ACTIVE)
+  attachments      Json              @default("{}")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  trainingHistories TrainingHistory[]
+  equipments       Equipment[]
+}
+
+enum Classification {
+  NONG_COT
+  CO_DONG
+  TAI_CHO
+}
+
+enum MilitiaStatus {
+  ACTIVE
+  INACTIVE
+  DISCHARGED
+}
+
+model TrainingHistory {
+  id              Int           @id @default(autoincrement())
+  recordId        Int
+  militiaRecord   MilitiaRecord @relation(fields: [recordId], references: [id])
+  courseName      String
+  startDate       DateTime
+  endDate         DateTime
+  result          String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Equipment {
+  id              Int           @id @default(autoincrement())
+  recordId        Int
+  militiaRecord   MilitiaRecord @relation(fields: [recordId], references: [id])
+  equipmentName   String
+  quantity        Int           @default(1)
+  issueDate       DateTime
+  status          EquipmentStatus @default(ISSUED)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum EquipmentStatus {
+  ISSUED
+  RETURNED
+  LOST
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}
