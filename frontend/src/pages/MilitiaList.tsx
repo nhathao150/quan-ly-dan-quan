@@ -2,36 +2,9 @@ import { useAuth } from '@clerk/clerk-react';
 import { Search, Plus, Edit, Trash2, Eye, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, TYPE_OPTIONS, UNIT_MAPPING } from '../config';
 
-const TYPE_OPTIONS = [
-  'Dân quân thường trực',
-  'Dân quân cơ động',
-  'Dân quân tại chỗ',
-  'Dân quân binh chủng'
-];
 
-const UNIT_MAPPING: Record<string, string[]> = {
-  'Dân quân thường trực': [],
-  'Dân quân cơ động': ['Đội 1', 'Đội 2', 'Đội 3'],
-  'Dân quân tại chỗ': [
-    'Khu phố 1', 'Khu phố 2', 'Khu phố 3', 'Khu phố 4', 'Khu phố 5',
-    'Khu phố 8', 'Khu phố 9', 'Khu phố 10', 'Khu phố 11', 'Khu phố 12', 'Khu phố 13', 'Khu phố 14',
-    'Khu phố 15', 'Khu phố 16', 'Khu phố 17', 'Khu phố 18', 'Khu phố 19', 'Khu phố 20', 'Khu phố 21', 'Khu phố 22'
-  ],
-  'Dân quân binh chủng': [
-    'Thông tin hữu tuyến điện (DQ TTHTĐ)',
-    'Thông tin vô tuyến điện (DQ TTVTĐ)',
-    'Thông tin vô tuyến (DQ TTVĐ)',
-    'Cối 60MM',
-    'Cối 82MM',
-    'Công binh (DQCB)',
-    'Hóa học (DQHH)',
-    'Trinh sát (DQTS)',
-    'Y tế (DQYT)',
-    'Phòng không (DQPH)'
-  ]
-};
 
 
 const REQUIRED_DOCS = [
@@ -127,15 +100,38 @@ export default function MilitiaList() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Tìm theo tên, CCCD..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          <div className="relative flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 max-w-3xl">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Tìm theo tên, CCCD..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div>
+              <select
+                value={filterType}
+                onChange={(e) => { setFilterType(e.target.value); setFilterUnit(''); }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              >
+                <option value="">-- Loại Dân quân --</option>
+                {TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            </div>
+            <div>
+              <select
+                value={filterUnit}
+                onChange={(e) => setFilterUnit(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                disabled={!filterType || !UNIT_MAPPING[filterType]?.length}
+              >
+                <option value="">-- Đơn vị --</option>
+                {filterType && UNIT_MAPPING[filterType]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            </div>
           </div>
           <div className="flex space-x-2">
             <select 
