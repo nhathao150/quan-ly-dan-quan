@@ -54,9 +54,11 @@ export class MilitiaController {
   // Mọi tài khoản đăng nhập (STAFF, ADMIN, SUPER_ADMIN) đều được xem danh sách
   findAll(
     @Query('search') search?: string,
-    @Query('classification') classification?: any
+    @Query('classification') classification?: any,
+    @Query('militiaType') militiaType?: string,
+    @Query('militiaUnit') militiaUnit?: string
   ) {
-    return this.militiaService.findAll(search, classification);
+    return this.militiaService.findAll(search, classification, militiaType, militiaUnit);
   }
 
   @Get(':id')
