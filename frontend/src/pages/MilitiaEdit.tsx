@@ -298,14 +298,7 @@ export default function MilitiaEdit() {
               <input required name="address" value={formData.address} onChange={handleChange} type="text" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phân loại</label>
-              <select name="classification" value={formData.classification} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="NONG_COT">Dân quân Nòng cốt</option>
-                <option value="CO_DONG">Dân quân Cơ động</option>
-                <option value="TAI_CHO">Dân quân Tại chỗ</option>
-              </select>
-            </div>
+            
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>

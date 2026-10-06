@@ -22,7 +22,7 @@ export default function MilitiaList() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterUnit, setFilterUnit] = useState('');
-  const [classification, setClassification] = useState('');
+  
   const navigate = useNavigate();
 
   const fetchMilitia = async () => {
@@ -31,7 +31,7 @@ export default function MilitiaList() {
       const token = await getToken();
       const query = new URLSearchParams();
       if (search) query.append('search', search);
-      if (classification) query.append('classification', classification);
+      
 
       const res = await fetch(`${API_BASE_URL}/militia?${query.toString()}`, {
         headers: {
@@ -54,7 +54,7 @@ export default function MilitiaList() {
 
   useEffect(() => {
     fetchMilitia();
-  }, [search, classification]);
+  }, [search, filterType, filterUnit]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa hồ sơ này?')) return;
@@ -133,18 +133,7 @@ export default function MilitiaList() {
               </select>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <select 
-              value={classification}
-              onChange={(e) => setClassification(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-            >
-              <option value="">Tất cả phân loại</option>
-              <option value="NONG_COT">Nòng cốt</option>
-              <option value="CO_DONG">Cơ động</option>
-              <option value="TAI_CHO">Tại chỗ</option>
-            </select>
-          </div>
+          
         </div>
 
         {/* Table */}
@@ -154,7 +143,7 @@ export default function MilitiaList() {
               <tr className="bg-gray-50 text-gray-600 text-sm border-b">
                 <th className="p-4 font-medium">Họ và tên</th>
                 <th className="p-4 font-medium">CCCD</th>
-                <th className="p-4 font-medium">Phân loại</th>
+                <th className="p-4 font-medium">Loại & Đơn vị</th>
                 <th className="p-4 font-medium w-64">Tiến độ Giấy tờ</th>
                 <th className="p-4 font-medium">Trạng thái</th>
                 <th className="p-4 font-medium text-right">Thao tác</th>
@@ -182,10 +171,15 @@ export default function MilitiaList() {
                       </td>
                       <td className="p-4 text-gray-600">{item.nationalId}</td>
                       <td className="p-4">
-                        <span className="bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                          {item.classification === 'NONG_COT' ? 'Nòng cốt' : item.classification === 'CO_DONG' ? 'Cơ động' : 'Tại chỗ'}
-                        </span>
-                      </td>
+    {item.militiaType ? (
+      <div className="text-sm font-medium text-blue-700">{item.militiaType}</div>
+    ) : (
+      <span className="text-xs text-gray-400 italic">Chưa phân loại</span>
+    )}
+    {item.militiaUnit && (
+      <div className="text-xs text-gray-500 mt-1">{item.militiaUnit}</div>
+    )}
+  </td>
                       
                       <td className="p-4 align-top">
                         <div className="flex flex-col gap-1.5">
