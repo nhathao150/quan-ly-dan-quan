@@ -23,15 +23,19 @@ export default function MilitiaList() {
   const [filterType, setFilterType] = useState('');
   const [filterUnit, setFilterUnit] = useState('');
   
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
   const navigate = useNavigate();
 
   const fetchMilitia = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const token = await getToken();
       const query = new URLSearchParams();
       if (search) query.append('search', search);
-      
+      if (filterType) query.append('militiaType', filterType);
+      if (filterUnit) query.append('militiaUnit', filterUnit);
 
       const res = await fetch(`${API_BASE_URL}/militia?${query.toString()}`, {
         headers: {
@@ -44,9 +48,16 @@ export default function MilitiaList() {
         return;
       }
       const result = await res.json();
-      setData(result);
+      if (res.ok && Array.isArray(result)) {
+        setData(result);
+      } else {
+        setData([]);
+        setErrorMsg(result?.message || 'Không thể tải dữ liệu từ máy chủ (Kiểm tra kết nối Database).');
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setData([]);
+      setErrorMsg('Không thể kết nối tới máy chủ Backend.');
     } finally {
       setLoading(false);
     }
@@ -153,6 +164,10 @@ export default function MilitiaList() {
               {loading ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td>
+                </tr>
+              ) : errorMsg ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-red-600 bg-red-50/50 font-medium">{errorMsg}</td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>

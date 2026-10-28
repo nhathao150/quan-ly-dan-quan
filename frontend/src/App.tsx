@@ -6,6 +6,9 @@ import MilitiaList from './pages/MilitiaList';
 import MilitiaForm from './pages/MilitiaForm';
 import MilitiaEdit from './pages/MilitiaEdit';
 import MilitiaDetail from './pages/MilitiaDetail';
+import LogisticsPage from './pages/LogisticsPage';
+import RoleManagement from './pages/RoleManagement';
+import TaskManagement from './pages/TaskManagement';
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -46,6 +49,9 @@ function App() {
             <Route path="ho-so/them-moi" element={<MilitiaForm />} />
             <Route path="ho-so/chi-tiet/:id" element={<MilitiaDetail />} />
             <Route path="ho-so/sua/:id" element={<MilitiaEdit />} />
+            <Route path="hau-can" element={<LogisticsPage />} />
+            <Route path="cong-viec" element={<TaskManagement />} />
+            <Route path="phan-quyen" element={<RoleManagement />} />
           </Route>
         </Routes>
       </BrowserRouter>

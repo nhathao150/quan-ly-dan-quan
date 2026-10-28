@@ -12,7 +12,7 @@ export class MilitiaService {
     });
   }
 
-  async findAll(search?: string, classification?: any) {
+  async findAll(search?: string, classification?: any, militiaType?: string, militiaUnit?: string) {
     const where: Prisma.MilitiaRecordWhereInput = {};
     
     if (search) {
@@ -24,6 +24,14 @@ export class MilitiaService {
     
     if (classification) {
       where.classification = classification;
+    }
+
+    if (militiaType) {
+      where.militiaType = militiaType;
+    }
+
+    if (militiaUnit) {
+      where.militiaUnit = militiaUnit;
     }
 
     return this.prisma.militiaRecord.findMany({

@@ -29,10 +29,12 @@ model MilitiaRecord {
   id               Int               @id @default(autoincrement())
   fullName         String
   gender           String            @default("Nam")
+  militiaType      String?
+  militiaUnit      String?
   nationalId       String            @unique
   dateOfBirth      DateTime
   address          String
-  classification   Classification
+  classification   Classification    @default(NONG_COT)
   joinedDate       DateTime
   status           MilitiaStatus     @default(ACTIVE)
   attachments      Json              @default("{}")
@@ -92,3 +94,78 @@ model AuditLog {
   details   String?
   createdAt DateTime @default(now())
 }
+
+model UserRoleConfig {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  fullName  String?
+  role      String   @default("DAN_QUAN") // SUPER_ADMIN | DAN_QUAN | HAU_CAN
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LogisticsInventory {
+  id        Int      @id @default(autoincrement())
+  itemName  String
+  category  String   @default("Quân trang")
+  quantity  Int      @default(0)
+  unit      String   @default("Cái")
+  condition String   @default("Tốt")
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LogisticsDistribution {
+  id            Int       @id @default(autoincrement())
+  itemName      String
+  recipientName String
+  recipientUnit String?
+  quantity      Int       @default(1)
+  issueDate     DateTime  @default(now())
+  returnDate    DateTime?
+  status        String    @default("ISSUED") // ISSUED | RETURNED
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model LogisticsFinance {
+  id             Int      @id @default(autoincrement())
+  title          String
+  type           String   @default("CHI_AN") // THU | CHI_AN | PHU_CAP | KHAC
+  amount         Float    @default(0)
+  recordDate     DateTime @default(now())
+  personInCharge String?
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model LogisticsDocument {
+  id          Int      @id @default(autoincrement())
+  title       String
+  period      String?
+  note        String?
+  attachments Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkTask {
+  id           Int       @id @default(autoincrement())
+  title        String
+  description  String?
+  department   String    @default("DAN_QUAN") // DAN_QUAN | HAU_CAN
+  assigneeName String
+  assignedBy   String?
+  priority     String    @default("MEDIUM") // HIGH | MEDIUM | LOW
+  dueDate      DateTime?
+  progress     Int       @default(0) // 0 - 100
+  status       String    @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+

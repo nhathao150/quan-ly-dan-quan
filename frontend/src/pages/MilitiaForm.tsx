@@ -1,13 +1,9 @@
 import { useAuth } from '@clerk/clerk-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TYPE_OPTIONS, UNIT_MAPPING } from '../config';
-import { ArrowLeft, Save, Upload, CheckCircle, X, FileText, Eye } from 'lucide-react';
+import { API_BASE_URL, TYPE_OPTIONS, UNIT_MAPPING } from '../config';
+import { ArrowLeft, Save, Upload, X, FileText, Eye } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-
-
-
-
 
 const DOCUMENT_TYPES = [
   { id: 'donXin', label: 'Đơn xin tham gia DQTV' },
@@ -25,6 +21,7 @@ export default function MilitiaForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [attachments, setAttachments] = useState<Record<string, File[]>>({});
+  const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>({});
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState({
@@ -44,6 +41,10 @@ export default function MilitiaForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const toggleCheckDoc = (docId: string) => {
+    setCheckedDocs(prev => ({ ...prev, [docId]: !prev[docId] }));
+  };
+
   const handleFileChange = async (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
@@ -57,7 +58,6 @@ export default function MilitiaForm() {
                 useWebWorker: true
               };
               const compressedBlob = await imageCompression(file, options);
-              // Đảm bảo là File object có tên
               return new File([compressedBlob], file.name, { type: file.type });
             } catch (err) {
               console.error('Lỗi nén ảnh:', err);
@@ -72,6 +72,7 @@ export default function MilitiaForm() {
         ...prev,
         [docId]: [...(prev[docId] || []), ...processedFiles]
       }));
+      setCheckedDocs(prev => ({ ...prev, [docId]: true }));
     }
   };
 
@@ -95,7 +96,7 @@ export default function MilitiaForm() {
           const formDataFiles = new FormData();
           attachments[doc.id].forEach(file => formDataFiles.append('files', file, file.name));
           
-          const uploadRes = await fetch(`\${API_BASE_URL}/militia/upload`, {
+          const uploadRes = await fetch(`${API_BASE_URL}/militia/upload`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formDataFiles
@@ -106,10 +107,12 @@ export default function MilitiaForm() {
             throw new Error(`Upload ${doc.label} thất bại: ${err.message || 'Unknown'}`);
           }
           uploadedUrls[doc.id] = await uploadRes.json();
+        } else if (checkedDocs[doc.id]) {
+          uploadedUrls[doc.id] = ['MANUAL_CHECK'];
         }
       }
 
-      const res = await fetch(`\${API_BASE_URL}/militia`, {
+      const res = await fetch(`${API_BASE_URL}/militia`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -276,14 +279,26 @@ export default function MilitiaForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {DOCUMENT_TYPES.map(doc => {
               const hasFiles = attachments[doc.id] && attachments[doc.id].length > 0;
+              const isChecked = !!checkedDocs[doc.id] || hasFiles;
               return (
-                <div key={doc.id} className={`p-4 border rounded-xl transition-all ${hasFiles ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}>
+                <div key={doc.id} className={`p-4 border rounded-xl transition-all ${isChecked ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1 pr-2 overflow-hidden">
-                      <p className="font-medium text-sm text-gray-800 flex items-center gap-2">
-                        {hasFiles && <CheckCircle className="text-green-600 shrink-0" size={18} />}
-                        {doc.label}
-                      </p>
+                      <label className="font-medium text-sm text-gray-800 flex items-center gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCheckDoc(doc.id)}
+                          disabled={hasFiles}
+                          className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer accent-green-600 shrink-0"
+                        />
+                        <span>{doc.label}</span>
+                      </label>
+                      {isChecked && !hasFiles && (
+                        <p className="text-xs text-green-700 mt-1.5 pl-7 font-medium">
+                          ✓ Đã đánh dấu có hồ sơ (không kèm ảnh)
+                        </p>
+                      )}
                       {hasFiles && (
                         <div className="mt-3 space-y-2">
                           {attachments[doc.id].map((file, idx) => {

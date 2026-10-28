@@ -1,13 +1,9 @@
 import { useAuth } from '@clerk/clerk-react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { TYPE_OPTIONS, UNIT_MAPPING } from '../config';
-import { ArrowLeft, Save, Upload, CheckCircle, X, FileText, Eye } from 'lucide-react';
+import { TYPE_OPTIONS, UNIT_MAPPING, SERVER_URL, API_BASE_URL } from '../config';
+import { ArrowLeft, Save, Upload, X, FileText, Eye } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-import { SERVER_URL, API_BASE_URL } from '../config';
-
-
-
 
 const DOCUMENT_TYPES = [
   { id: 'donXin', label: 'Đơn xin tham gia DQTV' },
@@ -33,6 +29,9 @@ export default function MilitiaEdit() {
   
   // Newly added files (File objects)
   const [newAttachments, setNewAttachments] = useState<Record<string, File[]>>({});
+  
+  // Manual checkbox state per document
+  const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>({});
   
   // For Lightbox Preview
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -79,7 +78,17 @@ export default function MilitiaEdit() {
           } else if (result.attachments && typeof result.attachments === 'object') {
             parsedAttachments = result.attachments;
           }
-          setExistingAttachments(parsedAttachments);
+
+          const initialChecked: Record<string, boolean> = {};
+          const cleanedAttachments: Record<string, string[]> = {};
+          for (const [docKey, urls] of Object.entries(parsedAttachments)) {
+            if (Array.isArray(urls) && urls.length > 0) {
+              initialChecked[docKey] = true;
+              cleanedAttachments[docKey] = urls.filter(u => u !== 'MANUAL_CHECK');
+            }
+          }
+          setCheckedDocs(initialChecked);
+          setExistingAttachments(cleanedAttachments);
         } else {
           alert('Không tìm thấy hồ sơ');
           navigate('/ho-so');
@@ -96,6 +105,10 @@ export default function MilitiaEdit() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const toggleCheckDoc = (docId: string) => {
+    setCheckedDocs(prev => ({ ...prev, [docId]: !prev[docId] }));
   };
 
   const handleFileChange = async (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,6 +133,7 @@ export default function MilitiaEdit() {
         ...prev,
         [docId]: [...(prev[docId] || []), ...processedFiles]
       }));
+      setCheckedDocs(prev => ({ ...prev, [docId]: true }));
     }
   };
 
@@ -152,7 +166,7 @@ export default function MilitiaEdit() {
           const formDataFiles = new FormData();
           newAttachments[doc.id].forEach(file => formDataFiles.append('files', file, file.name));
           
-          const uploadRes = await fetch(`\${API_BASE_URL}/militia/upload`, {
+          const uploadRes = await fetch(`${API_BASE_URL}/militia/upload`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formDataFiles
@@ -166,6 +180,8 @@ export default function MilitiaEdit() {
           
           // Merge old and new
           finalUrls[doc.id] = [...(finalUrls[doc.id] || []), ...uploadedUrls];
+        } else if ((!finalUrls[doc.id] || finalUrls[doc.id].length === 0) && checkedDocs[doc.id]) {
+          finalUrls[doc.id] = ['MANUAL_CHECK'];
         }
       }
 
@@ -348,15 +364,27 @@ export default function MilitiaEdit() {
               const oldFiles = existingAttachments[doc.id] || [];
               const addedFiles = newAttachments[doc.id] || [];
               const hasAnyFiles = oldFiles.length > 0 || addedFiles.length > 0;
+              const isChecked = !!checkedDocs[doc.id] || hasAnyFiles;
 
               return (
-                <div key={doc.id} className={`p-4 border rounded-xl transition-all ${hasAnyFiles ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}>
+                <div key={doc.id} className={`p-4 border rounded-xl transition-all ${isChecked ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1 pr-2 overflow-hidden">
-                      <p className="font-medium text-sm text-gray-800 flex items-center gap-2">
-                        {hasAnyFiles && <CheckCircle className="text-blue-600 shrink-0" size={18} />}
-                        {doc.label}
-                      </p>
+                      <label className="font-medium text-sm text-gray-800 flex items-center gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCheckDoc(doc.id)}
+                          disabled={hasAnyFiles}
+                          className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer accent-green-600 shrink-0"
+                        />
+                        <span>{doc.label}</span>
+                      </label>
+                      {isChecked && !hasAnyFiles && (
+                        <p className="text-xs text-green-700 mt-1.5 pl-7 font-medium">
+                          ✓ Đã đánh dấu có hồ sơ (không kèm ảnh)
+                        </p>
+                      )}
                       
                       {hasAnyFiles && (
                         <div className="mt-3 space-y-2">

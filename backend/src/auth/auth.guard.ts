@@ -13,9 +13,10 @@ export class AuthGuard implements CanActivate {
     }
     
     try {
-      const payload = await verifyToken(token, {
+      const payload: any = await verifyToken(token, {
         secretKey: process.env.CLERK_SECRET_KEY,
-      });
+        issuer: null,
+      } as any);
       
       request['user'] = {
         id: payload.sub,

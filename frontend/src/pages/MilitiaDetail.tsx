@@ -94,7 +94,8 @@ export default function MilitiaDetail() {
     attachmentsMap = data.attachments;
   }
 
-  const hasAnyAttachments = Object.values(attachmentsMap).some(urls => urls.length > 0);
+  const hasAnyAttachments = Object.values(attachmentsMap).some(urls => Array.isArray(urls) && urls.length > 0);
+  const hasRealFiles = Object.values(attachmentsMap).some(urls => Array.isArray(urls) && urls.some(u => u !== 'MANUAL_CHECK'));
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
@@ -137,7 +138,7 @@ export default function MilitiaDetail() {
           <h1 className="text-2xl font-bold text-gray-800">Chi tiết Hồ sơ</h1>
         </div>
         <div className="flex space-x-2">
-          {hasAnyAttachments && (
+          {hasRealFiles && (
             <button onClick={handleDownloadZip} className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-sm">
               <FileArchive size={18} />
               <span className="hidden sm:inline">Tải toàn bộ (ZIP)</span>
@@ -205,13 +206,21 @@ export default function MilitiaDetail() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Loại Dân quân</p>
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded text-sm font-medium">
-                  {data.classification === 'NONG_COT' ? 'Nòng cốt' : data.classification === 'CO_DONG' ? 'Cơ động' : 'Tại chỗ'}
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded text-sm font-medium inline-block">
+                  {data.militiaType || 'Chưa phân loại'}
                 </span>
               </div>
+              {data.militiaUnit && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Đơn vị / Chuyên môn</p>
+                  <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded text-sm font-medium inline-block">
+                    {data.militiaUnit}
+                  </span>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-500 mb-1">Trạng thái hiện tại</p>
-                <span className={`px-3 py-1 rounded text-sm font-medium ${data.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <span className={`px-3 py-1 rounded text-sm font-medium inline-block ${data.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                   {data.status === 'ACTIVE' ? 'Đang tại ngũ' : data.status === 'INACTIVE' ? 'Tạm hoãn' : 'Đã xuất ngũ'}
                 </span>
               </div>
@@ -228,58 +237,66 @@ export default function MilitiaDetail() {
               <div className="space-y-4">
                 {Object.entries(attachmentsMap).map(([catKey, urls]) => {
                   if (!urls || urls.length === 0) return null;
+                  const realFiles = urls.filter(u => u !== 'MANUAL_CHECK');
                   return (
                     <div key={catKey} className="space-y-2">
-                      <p className="text-sm font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded">
-                        {DOCUMENT_LABELS[catKey] || 'Tài liệu khác'}
+                      <p className="text-sm font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded flex items-center justify-between">
+                        <span>{DOCUMENT_LABELS[catKey] || 'Tài liệu khác'}</span>
+                        {realFiles.length === 0 && (
+                          <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                            ✓ Đã có bản cứng
+                          </span>
+                        )}
                       </p>
-                      <ul className="space-y-2 pl-2">
-                        {urls.map((url: string, idx: number) => {
-                          const fileName = url.split('/').pop() || `Tai_lieu_${idx+1}`;
-                          const imageFlag = isImage(url);
-                          const pdfFlag = isPdf(url);
-                          const canPreview = imageFlag || pdfFlag;
-                          
-                          return (
-                            <li key={idx} className="flex flex-col bg-white rounded-lg overflow-hidden border border-gray-200">
-                              {imageFlag && (
-                                <div 
-                                  className="w-full h-24 bg-gray-200 cursor-pointer group relative overflow-hidden"
-                                  onClick={() => handlePreview(url)}
-                                >
-                                  <img src={url.startsWith('http') ? url : `${SERVER_URL}${url}`} alt="thumbnail" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <span className="text-white text-xs font-medium">Phóng to</span>
+                      {realFiles.length > 0 && (
+                        <ul className="space-y-2 pl-2">
+                          {realFiles.map((url: string, idx: number) => {
+                            const fileName = url.split('/').pop() || `Tai_lieu_${idx+1}`;
+                            const imageFlag = isImage(url);
+                            const pdfFlag = isPdf(url);
+                            const canPreview = imageFlag || pdfFlag;
+                            
+                            return (
+                              <li key={idx} className="flex flex-col bg-white rounded-lg overflow-hidden border border-gray-200">
+                                {imageFlag && (
+                                  <div 
+                                    className="w-full h-24 bg-gray-200 cursor-pointer group relative overflow-hidden"
+                                    onClick={() => handlePreview(url)}
+                                  >
+                                    <img src={url.startsWith('http') ? url : `${SERVER_URL}${url}`} alt="thumbnail" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <span className="text-white text-xs font-medium">Phóng to</span>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <div className="flex items-center justify-between p-2 hover:bg-gray-50 transition-colors">
+                                  <div className="flex items-center space-x-2 overflow-hidden">
+                                    <FileText className={`${imageFlag ? 'text-blue-500' : 'text-green-600'} flex-shrink-0`} size={16} />
+                                    <span 
+                                      className={`text-xs truncate ${canPreview ? 'text-blue-600 cursor-pointer hover:underline font-medium' : 'text-gray-700'}`} 
+                                      title={fileName}
+                                      onClick={() => canPreview && handlePreview(url)}
+                                    >
+                                      {fileName}
+                                    </span>
+                                  </div>
+                                  <div className="flex space-x-1 shrink-0 ml-1">
+                                    {canPreview && (
+                                      <button onClick={() => handlePreview(url)} className="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded shadow-sm" title="Xem trước">
+                                        <Eye size={14} />
+                                      </button>
+                                    )}
+                                    <a href={url.startsWith('http') ? url : `${SERVER_URL}${url}`} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-green-600 p-1 bg-gray-50 rounded shadow-sm" title="Tải xuống">
+                                      <Download size={14} />
+                                    </a>
                                   </div>
                                 </div>
-                              )}
-                              
-                              <div className="flex items-center justify-between p-2 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center space-x-2 overflow-hidden">
-                                  <FileText className={`${imageFlag ? 'text-blue-500' : 'text-green-600'} flex-shrink-0`} size={16} />
-                                  <span 
-                                    className={`text-xs truncate ${canPreview ? 'text-blue-600 cursor-pointer hover:underline font-medium' : 'text-gray-700'}`} 
-                                    title={fileName}
-                                    onClick={() => canPreview && handlePreview(url)}
-                                  >
-                                    {fileName}
-                                  </span>
-                                </div>
-                                <div className="flex space-x-1 shrink-0 ml-1">
-                                  {canPreview && (
-                                    <button onClick={() => handlePreview(url)} className="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded shadow-sm" title="Xem trước">
-                                      <Eye size={14} />
-                                    </button>
-                                  )}
-                                  <a href={url.startsWith('http') ? url : `${SERVER_URL}${url}`} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-green-600 p-1 bg-gray-50 rounded shadow-sm" title="Tải xuống">
-                                    <Download size={14} />
-                                  </a>
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
                     </div>
                   );
                 })}
