@@ -1,10 +1,10 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, Get, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Get, UseGuards, Request, Inject } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { AuthGuard } from './auth.guard.js';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(@Inject(AuthService) private authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')

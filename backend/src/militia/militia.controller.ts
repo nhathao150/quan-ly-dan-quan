@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UseInterceptors, UploadedFiles, Res, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UseInterceptors, UploadedFiles, Res, NotFoundException, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { MilitiaService } from './militia.service.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -13,8 +13,8 @@ const archiver = _archiver as any;
 @Controller('api/militia')
 export class MilitiaController {
   constructor(
-    private readonly militiaService: MilitiaService,
-    private readonly supabaseService: SupabaseService
+    @Inject(MilitiaService) private readonly militiaService: MilitiaService,
+    @Inject(SupabaseService) private readonly supabaseService: SupabaseService
   ) {}
 
   @Post('upload')

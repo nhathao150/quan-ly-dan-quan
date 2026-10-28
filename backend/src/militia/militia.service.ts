@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MilitiaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private prisma: PrismaService) {}
 
   async create(data: Prisma.MilitiaRecordCreateInput) {
     return this.prisma.militiaRecord.create({

@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 
 @UseGuards(AuthGuard)
 @Controller('api')
 export class LogisticsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   // ==================== PHÂN QUYỀN TÀI KHOẢN (ROLES) ====================
   @Get('roles/me')

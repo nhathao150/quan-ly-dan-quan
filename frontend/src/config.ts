@@ -1,6 +1,18 @@
-export const SERVER_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
-export const API_BASE_URL = `${SERVER_URL}/api`;
+const rawEnvUrl = import.meta.env.VITE_API_URL
+  ? String(import.meta.env.VITE_API_URL).trim().replace(/\/+$/, '').replace(/\/api$/, '')
+  : '';
 
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+export const SERVER_URL =
+  rawEnvUrl ||
+  (isLocalhost
+    ? `http://${window.location.hostname}:3000`
+    : 'https://quan-ly-dan-quan-backend.vercel.app');
+
+export const API_BASE_URL = `${SERVER_URL}/api`;
 
 export const TYPE_OPTIONS = [
   'Dân quân thường trực',
